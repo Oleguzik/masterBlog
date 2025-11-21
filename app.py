@@ -47,6 +47,22 @@ def add():
         return redirect(url_for('index'))
     return render_template('add.html')
 
+@app.route('/delete/<int:post_id>')
+def delete(post_id):
+    # Load existing posts
+    with open('articles.json', 'r') as f:
+        posts = json.load(f)
+    
+    # Remove the post with the given id
+    posts = [post for post in posts if post['id'] != post_id]
+    
+    # Save back to JSON
+    with open('articles.json', 'w') as f:
+        json.dump(posts, f, indent=4)
+    
+    # Redirect back to the home page
+    return redirect(url_for('index'))
+
 
 
 

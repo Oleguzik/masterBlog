@@ -41,7 +41,8 @@ def add():
             'id': new_id,
             'author': author,
             'title': title,
-            'content': content
+            'content': content,
+            'likes': 0
         }
         
         # Append to posts
@@ -86,6 +87,27 @@ def update(post_id):
     # Else, it's a GET request
     # So display the update.html page
     return render_template('update.html', post=post)
+
+@app.route('/like/<int:post_id>')
+def like(post_id):
+    # Load posts
+    with open('articles.json', 'r') as f:
+        posts = json.load(f)
+    
+    # Find the post and increment likes
+    for post in posts:
+        if post['id'] == post_id:
+            if 'likes' not in post:
+                post['likes'] = 0
+            post['likes'] += 1
+            break
+    
+    # Save back to JSON
+    with open('articles.json', 'w') as f:
+        json.dump(posts, f, indent=4)
+    
+    # Redirect back to index
+    return redirect(url_for('index'))
 
 @app.route('/delete/<int:post_id>')
 def delete(post_id):

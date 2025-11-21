@@ -4,8 +4,11 @@ import json
 app = Flask(__name__)
 
 def fetch_post_by_id(post_id):
-    with open('articles.json', 'r') as f:
-        posts = json.load(f)
+    try:
+        with open('data/articles.json', 'r') as f:
+            posts = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
     for post in posts:
         if post['id'] == post_id:
             return post
@@ -14,27 +17,37 @@ def fetch_post_by_id(post_id):
 @app.route('/')
 def index():
     # Load articles from JSON file
-    with open('articles.json', 'r') as f:
-        posts = json.load(f)
+    try:
+        with open('data/articles.json', 'r') as f:
+            posts = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        posts = []
     return render_template('index.html', posts=posts)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
+        # Get form data
+        author = request.form.get('author', '').strip()
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        
+        # Validate input
+        if not all([author, title, content]):
+            return "All fields are required", 400
+        
         # Load existing posts
-        with open('articles.json', 'r') as f:
-            posts = json.load(f)
+        try:
+            with open('data/articles.json', 'r') as f:
+                posts = json.load(f)
+        except FileNotFoundError:
+            posts = []
         
         # Generate new ID
         if posts:
             new_id = max(post['id'] for post in posts) + 1
         else:
             new_id = 1
-        
-        # Get form data
-        author = request.form.get('author')
-        title = request.form.get('title')
-        content = request.form.get('content')
         
         # Create new post
         new_post = {
@@ -49,7 +62,7 @@ def add():
         posts.append(new_post)
         
         # Save back to JSON
-        with open('articles.json', 'w') as f:
+        with open('data/articles.json', 'w') as f:
             json.dump(posts, f, indent=4)
         
         # Redirect to home
@@ -65,20 +78,32 @@ def update(post_id):
         return "Post not found", 404
     
     if request.method == 'POST':
+        # Get form data
+        author = request.form.get('author', '').strip()
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        
+        # Validate input
+        if not all([author, title, content]):
+            return "All fields are required", 400
+        
         # Load posts
-        with open('articles.json', 'r') as f:
-            posts = json.load(f)
+        try:
+            with open('data/articles.json', 'r') as f:
+                posts = json.load(f)
+        except FileNotFoundError:
+            return "Data file not found", 500
         
         # Find and update the post
         for p in posts:
             if p['id'] == post_id:
-                p['author'] = request.form.get('author')
-                p['title'] = request.form.get('title')
-                p['content'] = request.form.get('content')
+                p['author'] = author
+                p['title'] = title
+                p['content'] = content
                 break
         
         # Save back to JSON
-        with open('articles.json', 'w') as f:
+        with open('data/articles.json', 'w') as f:
             json.dump(posts, f, indent=4)
         
         # Redirect back to index
@@ -91,8 +116,11 @@ def update(post_id):
 @app.route('/like/<int:post_id>')
 def like(post_id):
     # Load posts
-    with open('articles.json', 'r') as f:
-        posts = json.load(f)
+    try:
+        with open('data/articles.json', 'r') as f:
+            posts = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return redirect(url_for('index'))
     
     # Find the post and increment likes
     for post in posts:
@@ -103,7 +131,7 @@ def like(post_id):
             break
     
     # Save back to JSON
-    with open('articles.json', 'w') as f:
+    with open('data/articles.json', 'w') as f:
         json.dump(posts, f, indent=4)
     
     # Redirect back to index
@@ -112,14 +140,17 @@ def like(post_id):
 @app.route('/delete/<int:post_id>')
 def delete(post_id):
     # Load existing posts
-    with open('articles.json', 'r') as f:
-        posts = json.load(f)
+    try:
+        with open('data/articles.json', 'r') as f:
+            posts = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return redirect(url_for('index'))
     
     # Remove the post with the given id
     posts = [post for post in posts if post['id'] != post_id]
     
     # Save back to JSON
-    with open('articles.json', 'w') as f:
+    with open('data/articles.json', 'w') as f:
         json.dump(posts, f, indent=4)
     
     # Redirect back to the home page
@@ -129,4 +160,4 @@ def delete(post_id):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5015, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

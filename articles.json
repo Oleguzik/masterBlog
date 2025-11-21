@@ -54,15 +54,9 @@
         "content": "Cryptocurrencies have evolved from niche investments to mainstream financial tools. Understanding blockchain technology and market dynamics is essential for informed participation."
     },
     {
-        "id": 10,
-        "author": "Jack Anderson",
-        "title": "Urban Gardening for City Dwellers",
-        "content": "Urban gardening allows city residents to grow their own food and connect with nature. Container gardening and vertical farms are making fresh produce accessible in metropolitan areas."
-    },
-    {
         "id": 11,
         "author": "Tester",
-        "title": "Test test Blog post",
-        "content": "Here is test for Blog post"
+        "title": "Test Blog post",
+        "content": "Here is test for Blog post\r\nBla-bla-bla"
     }
 ]
